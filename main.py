@@ -4,7 +4,8 @@ Complete implementation with evaluation
 
 Usage:
 1. Add your interview stories to ./data/raw/
-2. Set OPENAI_API_KEY in .env file
+2. Choose a provider with ``LLM_PROVIDER`` (`open_source` by default) and set the
+   corresponding API token
 3. Run: python main.py
 """
 
@@ -224,12 +225,24 @@ Provide a detailed answer with specific examples:"""
 def main():
     """Main execution flow"""
     
-    # Check for API key
-    if not config.OPENAI_API_KEY:
-        print("Error: OPENAI_API_KEY not found in environment")
-        print("Please create a .env file with your OpenAI API key")
-        print("Example: OPENAI_API_KEY=sk-...")
-        return
+    provider = (config.LLM_PROVIDER or "open_source").lower()
+
+    # Check for required credentials based on provider
+    if provider == "openai":
+        if not config.OPENAI_API_KEY:
+            print("Error: OPENAI_API_KEY not found in environment")
+            print("Set LLM_PROVIDER=open_source to use the default Mistral model")
+            print("or create a .env file with your OpenAI API key (OPENAI_API_KEY=sk-...)")
+            return
+    else:
+        if not config.HUGGINGFACEHUB_API_TOKEN:
+            print("Error: HUGGINGFACEHUB_API_TOKEN not found in environment")
+            print("Set LLM_PROVIDER=openai with an OpenAI API key to switch providers")
+            print(
+                "or create a .env file with your Hugging Face token "
+                "(HUGGINGFACEHUB_API_TOKEN=hf_...)"
+            )
+            return
     
     # Setup system
     qa_system, vs_manager, chunks = setup_qa_system(

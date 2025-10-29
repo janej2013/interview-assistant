@@ -1,9 +1,8 @@
-from typing import Dict, Any, List, Optional
-from langchain_openai import ChatOpenAI
+from typing import Dict, Any, List
 from langchain_community.vectorstores import Chroma
 from langchain.prompts import PromptTemplate
-from config.config import config
 import json
+from src.llm_factory import create_chat_model, extract_response_content
 
 class InterviewAssistant:
     """
@@ -17,17 +16,9 @@ class InterviewAssistant:
     
     def __init__(self, vectorstore: Chroma):
         self.vectorstore = vectorstore
-        self.llm = ChatOpenAI(
-            temperature=0,  # Deterministic for judging
-            model=config.LLM_MODEL,
-            openai_api_key=config.OPENAI_API_KEY
-        )
-        
-        self.creative_llm = ChatOpenAI(
-            temperature=0.3,  # Slightly creative for generation
-            model=config.LLM_MODEL,
-            openai_api_key=config.OPENAI_API_KEY
-        )
+        self.llm = create_chat_model(temperature=0)
+
+        self.creative_llm = create_chat_model(temperature=0.3)
     
     def answer_question(
         self,
@@ -156,10 +147,11 @@ Respond in JSON format:
             
             # Get LLM evaluation
             response = self.llm.invoke(prompt)
-            
+            raw_output = extract_response_content(response)
+
             try:
                 # Parse JSON response
-                eval_result = json.loads(response.content)
+                eval_result = json.loads(raw_output)
                 
                 evaluations.append({
                     'answer': candidate['answer'],
@@ -174,7 +166,10 @@ Respond in JSON format:
                 
             except json.JSONDecodeError:
                 # Fallback if JSON parsing fails
-                print(f"  Warning: Could not parse evaluation for candidate {i+1}")
+                print(
+                    f"  Warning: Could not parse evaluation for candidate {i+1}."
+                    f" Raw response: {raw_output!r}"
+                )
                 evaluations.append({
                     'answer': candidate['answer'],
                     'metadata': candidate.get('metadata', {}),
@@ -225,9 +220,9 @@ Generate a strong interview answer:"""
         )
         
         response = self.creative_llm.invoke(prompt)
-        
+
         return {
-            'answer': response.content,
+            'answer': extract_response_content(response),
             'used_contexts': len(candidates[:3])
         }
     
