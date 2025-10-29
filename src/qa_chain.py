@@ -1,9 +1,9 @@
 from typing import Dict, Any, List
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
 from langchain_community.vectorstores import Chroma
 from config.config import config
+from src.llm_factory import create_chat_model
 
 class QASystem:
     """
@@ -21,11 +21,7 @@ class QASystem:
         self.vectorstore = vectorstore
         self.retrieval_strategy = retrieval_strategy
         
-        self.llm = ChatOpenAI(
-            temperature=config.LLM_TEMPERATURE,
-            model=config.LLM_MODEL,
-            openai_api_key=config.OPENAI_API_KEY
-        )
+        self.llm = create_chat_model(temperature=config.LLM_TEMPERATURE)
         
         # Custom prompt template
         self.prompt_template = self._create_prompt_template()

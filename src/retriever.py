@@ -2,9 +2,9 @@ from typing import List
 from langchain.schema import Document
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import LLMChainExtractor
-from langchain_openai import ChatOpenAI
 from langchain_community.vectorstores import Chroma
 from config.config import config
+from src.llm_factory import create_chat_model
 
 class AdvancedRetriever:
     """
@@ -20,11 +20,7 @@ class AdvancedRetriever:
     
     def __init__(self, vectorstore: Chroma):
         self.vectorstore = vectorstore
-        self.llm = ChatOpenAI(
-            temperature=config.LLM_TEMPERATURE,
-            model=config.LLM_MODEL,
-            openai_api_key=config.OPENAI_API_KEY
-        )
+        self.llm = create_chat_model(temperature=config.LLM_TEMPERATURE)
     
     def basic_retrieval(self, query: str, k: int = 4) -> List[Document]:
         """Standard similarity search"""
