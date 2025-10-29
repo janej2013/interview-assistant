@@ -1,0 +1,25 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Environment & secrets
+.env
+.env.*
+
+# Project-generated data
+data/
+!data/.keep
+
+# Vector store caches
+*.chroma/
+chroma.db/
+
+# Logs & temp files
+*.log
+tmp/
